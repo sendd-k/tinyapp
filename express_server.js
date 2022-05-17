@@ -3,7 +3,6 @@ const res = require("express/lib/response");
 const app = express();
 const PORT = 8080; // default port 8080
 
-app.set("view engine", "ejs");
 
 //DATABASE OF SHORT:LONG URLS
 const urlDatabase = {
@@ -11,6 +10,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+app.set("view engine", "ejs");
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -44,6 +44,12 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
   res.render("urls_show", templateVars);
+});
+
+//DELETE BUTTON FUNCTION/REDIRECTS URLS
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls")
 });
 
 //REDIRECTS SHORT URL TO LONG URL
