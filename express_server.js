@@ -2,14 +2,18 @@ const express = require("express");
 const res = require("express/lib/response");
 const app = express();
 const PORT = 8080; // default port 8080
+const bodyParser = require('body-parser');
 
 
 //DATABASE OF SHORT:LONG URLS
 const urlDatabase = {};
 
+//DATABASE OF USERS
+const users = {}
+
 app.set("view engine", "ejs");
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({extended: true}));
+
+app.use(bodyParser.urlencoded({ extended: false }));
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -37,7 +41,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 //ROUTE FOR BASIC HELLO PAGE
-app.get("/hello", (requ, res) => {
+app.get("/hello", (req, res) => {
   res.send('<html><body>Hello <b>World</b></body?</html>\n');
 });
 
@@ -47,11 +51,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars)
 });
 
-//ROUTE FOR REGISTER PAGE
-app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies['username']}
-  res.render("urls_register", templateVars)
-})
+
 
 //ROUTE FOR NEW URL FORM
 app.get("/urls/new", (req, res) => {
@@ -99,6 +99,24 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`)
 });
 
+//ROUTE FOR REGISTER PAGE
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies['username']}
+  res.render("urls_register", templateVars)
+})
+
+//POST/RESIGER ENDPOINT - REDIRECTS TO URLS
+app.post("/register", (req, res) => {
+  const id = generaterRandomString()
+  users[id] = {
+    id,
+    email: req.body.email,
+    password: req.body.password
+  }
+  res.cookie('user_id', id)
+  res.redirect("urls")
+  console.log(users)
+})
 
 
 //SERVER ON/LOGS IF CONNECTION IS TRUE
