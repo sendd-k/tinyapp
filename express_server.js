@@ -18,6 +18,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
+//LOGIN PAGE ROUTE
+app.get('/login', (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]]}
+  res.render("urls_login", templateVars)
+})
+
 //LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
 app.post('/login', (req, res) => {
   res.cookie("user_id", req.body.id)
