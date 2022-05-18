@@ -111,7 +111,7 @@ app.post("/register", (req, res) => {
     res.send(400, "Email and/or password cannot be blank")
   } else if (userDuplicate(req.body.email)) {
     res.send('Email already exists!')
-  }
+  } else {
   const id = generaterRandomString()
   users[id] = {
     id,
@@ -121,6 +121,7 @@ app.post("/register", (req, res) => {
   res.cookie('user_id', id)
   res.redirect("urls")
   console.log(users)
+}
 })
 
 
