@@ -20,7 +20,7 @@ app.use(cookieParser());
 
 //LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
 app.post('/login', (req, res) => {
-  res.cookie("user_id", req.body.email)
+  res.cookie("user_id", req.body.id)
   res.redirect("/urls")
 });
 
@@ -107,6 +107,11 @@ app.get("/register", (req, res) => {
 
 //POST/RESIGER ENDPOINT - REDIRECTS TO URLS
 app.post("/register", (req, res) => {
+  if (req.body.email === '' || req.body.password === '') {
+    res.send(400, "Email and/or password cannot be blank")
+  } else if (userDuplicate(req.body.email)) {
+    res.send('Email already exists!')
+  }
   const id = generaterRandomString()
   users[id] = {
     id,
@@ -135,4 +140,10 @@ function generaterRandomString() {
   return string
 };
 
-generaterRandomString()
+const userDuplicate = function(email) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return true
+    }
+  } return false;
+};
