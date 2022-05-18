@@ -20,13 +20,13 @@ app.use(cookieParser());
 
 //LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
 app.post('/login', (req, res) => {
-  res.cookie("username", req.body.username)
+  res.cookie("user_id", req.body.email)
   res.redirect("/urls")
 });
 
 //LOGOUT FUNCTION/REDICRETS TO URLS(LOGGEDOUT)
 app.post('/logout', (req, res) => {
-  res.clearCookie("username")
+  res.clearCookie("user_id")
   res.redirect("/urls")
 });
 
@@ -47,7 +47,7 @@ app.get("/hello", (req, res) => {
 
 //ROUTE FOR URL PAGE
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
+  const templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
   res.render("urls_index", templateVars)
 });
 
@@ -55,13 +55,13 @@ app.get("/urls", (req, res) => {
 
 //ROUTE FOR NEW URL FORM
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
+  const templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars)
 });
 
 //ROUTE FOR THE SHORT URL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username']};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 });
 
@@ -101,7 +101,7 @@ app.post("/urls", (req, res) => {
 
 //ROUTE FOR REGISTER PAGE
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies['username']}
+  const templateVars = { user: users[req.cookies["user_id"]]}
   res.render("urls_register", templateVars)
 })
 
