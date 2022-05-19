@@ -16,6 +16,7 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const cookieParser = require("cookie-parser");
+const { redirect } = require("express/lib/response");
 app.use(cookieParser());
 
 
@@ -46,12 +47,16 @@ app.get("/urls", (req, res) => {
 //ROUTE FOR NEW URL FORM
 app.get("/urls/new", (req, res) => {
   const templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
+  if(!req.cookies["user_id"]){
+    res.redirect("/login")
+  } else {
   res.render("urls_new", templateVars)
+  }
 });
 
 //ROUTE FOR THE SHORT URL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies["user_id"]]};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 });
 
@@ -78,14 +83,14 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //REDIRECTS SHORT URL TO LONG URL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL]
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
 //GENERATES NEW STRING AND REDIRECTS URL
 app.post("/urls", (req, res) => {
   const shortURL = generaterRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies["user_id"]};
   res.redirect(`/urls/${shortURL}`)
 });
 
@@ -113,7 +118,6 @@ app.post("/register", (req, res) => {
     }
     res.cookie('user_id', id)
     res.redirect("urls")
-    console.log(users)
   }
 })
 
@@ -126,7 +130,6 @@ app.get('/login', (req, res) => {
 //LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
 app.post('/login', (req, res) => {
   const user = findUserByEmail(req.body.email, users)
-  console.log('USER',user)
   if(!user) {
     res.status(403).send('Account not on file')
   } else if (user && !passCheck(req.body.password, user)) {
