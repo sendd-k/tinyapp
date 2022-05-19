@@ -4,7 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 
-//const {urlsForUser, generaterRandomString, findUserByEmail, passCheck} = require('./helpers')
+const {urlsForUser, generaterRandomString, findUserByEmail, passCheck} = require('./helpers')
 
 //DATABASE OF SHORT:LONG URLS
 const urlDatabase = {};
@@ -40,7 +40,7 @@ app.get("/hello", (req, res) => {
 
 //ROUTE FOR URL PAGE
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlsForUser(req.cookies["user_id"]), 
+  const templateVars = { urls: urlsForUser(req.cookies["user_id"], urlDatabase), 
   user: users[req.cookies["user_id"]] };
   if(!req.cookies["user_id"]){
     return res.send("Please login or register first")
@@ -173,39 +173,3 @@ app.post('/logout', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-//GENERATES RANDOM ALPHANUMERIC STRING
-function generaterRandomString() {
-  let string = ''
-  let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  for(let i = 0; i < chars.length; i++) {
-    string += chars.charAt(Math.floor(Math.random() * chars.length));
-    string = string.slice(0, 6)
-  }
-  return string
-};
-
-const findUserByEmail = function(email, usersDB) {
-  for (const user in usersDB) {
-    if (usersDB[user].email === email) {
-      return usersDB[user]
-    }
-  } 
-  return false;
-};
-
-// User object param
-const passCheck = function(password, user) {
-  if(user.password !== password) return false
-  return true
-};
-
-const urlsForUser = function(id) {
-  let urls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      urls[url] = urlDatabase[url];
-    }
-  }
-  return urls;
-}
