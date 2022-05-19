@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 
+//const {urlsForUser, generaterRandomString, findUserByEmail, passCheck} = require('./helpers')
 
 //DATABASE OF SHORT:LONG URLS
 const urlDatabase = {};
@@ -17,6 +18,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 const cookieParser = require("cookie-parser");
 const { redirect } = require("express/lib/response");
+const req = require("express/lib/request");
 app.use(cookieParser());
 
 
@@ -38,8 +40,13 @@ app.get("/hello", (req, res) => {
 
 //ROUTE FOR URL PAGE
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
+  const templateVars = { urls: urlsForUser(req.cookies["user_id"]), 
+  user: users[req.cookies["user_id"]] };
+  if(!req.cookies["user_id"]){
+    return res.send("Please login or register first")
+  } else {
   res.render("urls_index", templateVars)
+  }
 });
 
 
@@ -68,12 +75,18 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //DELETE BUTTON FUNCTION/REDIRECTS URLS
 app.post("/urls/:shortURL/delete", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    return res.status(401).send("You do not have credentials to delete")
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls")
 });
 
 //EDIT REDIRECTS TO SHORTURL
 app.get('/urls/:shortURL/edit', (req, res) => {
+  if (!req.cookies["user_id"]) {
+    return res.status(401).send("You do not have credentials to edit")
+  }
   shortURL = req.params.shortURL;
   res.redirect(`/urls/${shortURL}`)
 });
@@ -153,7 +166,7 @@ app.post('/login', (req, res) => {
 //LOGOUT FUNCTION/REDICRETS TO URLS(LOGGEDOUT)
 app.post('/logout', (req, res) => {
   res.clearCookie("user_id")
-  res.redirect("/urls")
+  res.redirect("/login")
 });
 
 //SERVER ON/LOGS IF CONNECTION IS TRUE
@@ -186,3 +199,13 @@ const passCheck = function(password, user) {
   if(user.password !== password) return false
   return true
 };
+
+const urlsForUser = function(id) {
+  let urls = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      urls[url] = urlDatabase[url];
+    }
+  }
+  return urls;
+}
