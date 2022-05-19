@@ -3,6 +3,7 @@ const res = require("express/lib/response");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs')
 
 const {urlsForUser, generaterRandomString, findUserByEmail, passCheck} = require('./helpers')
 
@@ -133,14 +134,17 @@ app.post("/register", (req, res) => {
   if (user) {
     res.send('Account already exists!')
   } else {
-    const id = generaterRandomString()
+    const id = generaterRandomString();
+    const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
     users[id] = {
       id,
       email: req.body.email,
-      password: req.body.password
+      password: hashedPassword
     }
     res.cookie('user_id', id)
     res.redirect("urls")
+    console.log(users)
   }
 })
 

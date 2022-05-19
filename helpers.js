@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs')
+
 //GENERATES RANDOM ALPHANUMERIC STRING
 const generaterRandomString = function () {
   let string = ''
@@ -21,8 +23,8 @@ const findUserByEmail = function(email, usersDB) {
 
 // CHECKS PASSWORD
 const passCheck = function(password, user) {
-  if(user.password !== password) return false
-  return true
+  if(!bcrypt.compareSync("", password)) return true
+  return false
 };
 
 // LOOPS DATABASE FOR MATCHING IDS TO URLS

@@ -1,11 +1,11 @@
-function generaterRandomString() {
-  let string = ''
-  let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  for(let i = 0; i < chars.length; i++) {
-    string += chars.charAt(Math.floor(Math.random() * chars.length));
-    string = string.slice(0, 6)
-  }
-  console.log(string)
-}
+let array = [1, 2, 2, 4, 2]
+let newArr = []
+for(let i = 0; i < array.length; i++) {
+  newArr.push(array[3]);
+};
 
-generaterRandomString()
+newArr = newArr[0]
+newArr = newArr.toString()
+newArr = parseInt(newArr)
+console.log(newArr)
+console.log(typeof newArr)
