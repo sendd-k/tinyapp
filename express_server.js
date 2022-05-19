@@ -56,8 +56,13 @@ app.get("/urls/new", (req, res) => {
 
 //ROUTE FOR THE SHORT URL
 app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if(!urlDatabase.hasOwnProperty(shortURL)) {
+    return res.status(404).send("page not found")
+  } else {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
+  }
 });
 
 
@@ -83,8 +88,13 @@ app.post('/urls/:shortURL', (req, res) => {
 
 //REDIRECTS SHORT URL TO LONG URL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const shortURL = req.params.shortURL;
+  if(!urlDatabase.hasOwnProperty(shortURL)) {
+    return res.status(404).send("page not found")
+  } else {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
+}
 });
 
 //GENERATES NEW STRING AND REDIRECTS URL
