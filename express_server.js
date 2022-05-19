@@ -18,23 +18,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
-//LOGIN PAGE ROUTE
-app.get('/login', (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]]}
-  res.render("urls_login", templateVars)
-})
 
-//LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
-app.post('/login', (req, res) => {
-  res.cookie("user_id", req.body.id)
-  res.redirect("/urls")
-});
-
-//LOGOUT FUNCTION/REDICRETS TO URLS(LOGGEDOUT)
-app.post('/logout', (req, res) => {
-  res.clearCookie("user_id")
-  res.redirect("/urls")
-});
 
 //ROUTE FOR SIMPLE START UP PAGE
 app.get("/", (req, res) => {
@@ -113,23 +97,51 @@ app.get("/register", (req, res) => {
 
 //POST/RESIGER ENDPOINT - REDIRECTS TO URLS
 app.post("/register", (req, res) => {
-  if (req.body.email === '' || req.body.password === '') {
-    res.send(400, "Email and/or password cannot be blank")
-  } else if (userDuplicate(req.body.email)) {
-    res.send('Email already exists!')
+  const user = findUserByEmail(req.body.email, users)
+  if (!req.body.email || !req.body.password) {
+    return res.send(400, "Email and/or password cannot be blank")
+  } 
+  
+  if (user) {
+    res.send('Account already exists!')
   } else {
-  const id = generaterRandomString()
-  users[id] = {
-    id,
-    email: req.body.email,
-    password: req.body.password
+    const id = generaterRandomString()
+    users[id] = {
+      id,
+      email: req.body.email,
+      password: req.body.password
+    }
+    res.cookie('user_id', id)
+    res.redirect("urls")
+    console.log(users)
   }
-  res.cookie('user_id', id)
-  res.redirect("urls")
-  console.log(users)
-}
 })
 
+//LOGIN PAGE ROUTE
+app.get('/login', (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]]}
+  res.render("urls_login", templateVars)
+})
+
+//LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
+app.post('/login', (req, res) => {
+  const user = findUserByEmail(req.body.email, users)
+  console.log('USER',user)
+  if(!user) {
+    res.status(403).send('Account not on file')
+  } else if (user && !passCheck(req.body.password, user)) {
+    res.status(403).send('Email/Password do not match')
+  } else {
+    res.cookie("user_id", user.id)
+    res.redirect("/urls")
+  }
+});
+
+//LOGOUT FUNCTION/REDICRETS TO URLS(LOGGEDOUT)
+app.post('/logout', (req, res) => {
+  res.clearCookie("user_id")
+  res.redirect("/urls")
+});
 
 //SERVER ON/LOGS IF CONNECTION IS TRUE
 app.listen(PORT, () => {
@@ -147,10 +159,17 @@ function generaterRandomString() {
   return string
 };
 
-const userDuplicate = function(email) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return true
+const findUserByEmail = function(email, usersDB) {
+  for (const user in usersDB) {
+    if (usersDB[user].email === email) {
+      return usersDB[user]
     }
-  } return false;
+  } 
+  return false;
+};
+
+// User object param
+const passCheck = function(password, user) {
+  if(user.password !== password) return false
+  return true
 };
