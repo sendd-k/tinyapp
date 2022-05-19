@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs')
+const cookieSession = require("cookie-session")
 
 const {urlsForUser, generaterRandomString, findUserByEmail, passCheck} = require('./helpers')
 
@@ -15,7 +16,12 @@ const users = {}
 
 app.set("view engine", "ejs");
 
+// app.use(cookieSession({
+//   name: 'session',
+//   keys: [],
+// }));
 app.use(bodyParser.urlencoded({ extended: false }));
+
 
 const cookieParser = require("cookie-parser");
 const { redirect } = require("express/lib/response");
@@ -127,6 +133,7 @@ app.get("/register", (req, res) => {
 //POST/RESIGER ENDPOINT - REDIRECTS TO URLS
 app.post("/register", (req, res) => {
   const user = findUserByEmail(req.body.email, users)
+  const password = req.body.password;
   if (!req.body.email || !req.body.password) {
     return res.send(400, "Email and/or password cannot be blank")
   } 
@@ -135,7 +142,7 @@ app.post("/register", (req, res) => {
     res.send('Account already exists!')
   } else {
     const id = generaterRandomString();
-    const password = req.body.password;
+    
     const hashedPassword = bcrypt.hashSync(password, 10);
     users[id] = {
       id,
@@ -153,7 +160,7 @@ app.get('/login', (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]]}
   res.render("urls_login", templateVars)
 })
-
+//-------------------------------------------------------
 //LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
 app.post('/login', (req, res) => {
   const user = findUserByEmail(req.body.email, users)
@@ -166,7 +173,7 @@ app.post('/login', (req, res) => {
     res.redirect("/urls")
   }
 });
-
+//------------------------------------------------------------------
 //LOGOUT FUNCTION/REDICRETS TO URLS(LOGGEDOUT)
 app.post('/logout', (req, res) => {
   res.clearCookie("user_id")

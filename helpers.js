@@ -23,8 +23,8 @@ const findUserByEmail = function(email, usersDB) {
 
 // CHECKS PASSWORD
 const passCheck = function(password, user) {
-  if(!bcrypt.compareSync("", password)) return true
-  return false
+  if(!bcrypt.compareSync(password, user.password)) return false
+  return true
 };
 
 // LOOPS DATABASE FOR MATCHING IDS TO URLS
