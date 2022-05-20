@@ -30,7 +30,7 @@ const req = require("express/lib/request");
 
 
 
-//ROUTE FOR SIMPLE START UP PAGE
+//ROUTE FOR SIMPLE START UP PAGE DONE
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -40,47 +40,73 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//ROUTE FOR BASIC HELLO PAGE
-app.get("/hello", (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body?</html>\n');
-});
-
-//ROUTE FOR URL PAGE
+//ROUTE FOR URL PAGE DONE
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlsForUser(req.session.user_id, urlDatabase), 
   user: users[req.session.user_id] };
-  if(!req.session.user_id){
-    return res.send("Please login or register first")
+  if(req.session.user_id){
+    
+    res.render("urls_index", templateVars)
   } else {
-  res.render("urls_index", templateVars)
+    return res.send("Please login or register first")
   }
 });
 
 
 
-//ROUTE FOR NEW URL FORM
+//ROUTE FOR NEW URL FORM//DONE
 app.get("/urls/new", (req, res) => {
   const templateVars = { urls: urlDatabase, user: users[req.session.user_id] };
-  if(!req.session.user_id){
-    res.redirect("/login")
+  if(req.session.user_id){
+    res.render("urls_new", templateVars)
   } else {
-  res.render("urls_new", templateVars)
+    res.send("Please login/register to access")
   }
 });
 
-//ROUTE FOR THE SHORT URL
+//ROUTE FOR THE SHORT URL//DONE
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  if(!urlDatabase.hasOwnProperty(shortURL)) {
-    return res.status(404).send("page not found")
-  } else {
+  const userUrls = urlsForUser(req.session.user_id, urlDatabase);
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.session.user_id]};
-  res.render("urls_show", templateVars);
+  if(!urlDatabase.hasOwnProperty(shortURL)) {
+    return res.status(404).send("URL does not exist in database")
+  } 
+  if (!req.session.user_id || !userUrls[shortURL]) {
+    res.send("Please login/register to view your URL")
+  
+  } else {
+    res.render("urls_show", templateVars);
   }
 });
 
+//REDIRECTS SHORT URL TO LONG URL DONE
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  if(!urlDatabase.hasOwnProperty(shortURL)) {
+    return res.status(404).send("URL does not exist in database")
+  } else {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+  res.redirect(longURL);
+}
+});
 
-//DELETE BUTTON FUNCTION/REDIRECTS URLS
+//GENERATES NEW STRING AND REDIRECTS URL DONE
+app.post("/urls", (req, res) => {
+  const shortURL = generaterRandomString();
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session.user_id};
+  res.redirect(`/urls/${shortURL}`)
+});
+
+//EDIT FUNCTION/REDIRECTS TO SHORTURL AFTER CHANGE DONE
+app.post('/urls/:shortURL', (req, res) => {
+  shortURL = req.params.shortURL;
+  urlDatabase[shortURL].longURL = req.body.newURL;
+  res.redirect(`/urls`);
+});
+
+
+//DELETE BUTTON FUNCTION/REDIRECTS URLS DONE
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (!req.session.user_id) {
     return res.status(401).send("You do not have credentials to delete")
@@ -89,40 +115,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls")
 });
 
-//EDIT REDIRECTS TO SHORTURL
-app.get('/urls/:shortURL/edit', (req, res) => {
-  if (!req.session.user_id) {
-    return res.status(401).send("You do not have credentials to edit")
-  }
-  shortURL = req.params.shortURL;
-  res.redirect(`/urls/${shortURL}`)
-});
 
-//EDIT FUNCTION/REDIRECTS TO SHORTURL AFTER CHANGE
-app.post('/urls/:shortURL', (req, res) => {
-  shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.newURL;
-  res.redirect(`/urls/${shortURL}`);
-});
-
-
-//REDIRECTS SHORT URL TO LONG URL
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  if(!urlDatabase.hasOwnProperty(shortURL)) {
-    return res.status(404).send("page not found")
-  } else {
-    const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
-}
-});
-
-//GENERATES NEW STRING AND REDIRECTS URL
-app.post("/urls", (req, res) => {
-  const shortURL = generaterRandomString();
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session.user_id};
-  res.redirect(`/urls/${shortURL}`)
-});
 
 //ROUTE FOR REGISTER PAGE
 app.get("/register", (req, res) => {
