@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs')
 const cookieSession = require("cookie-session")
 
-const {urlsForUser, generaterRandomString, findUserByEmail, passCheck} = require('./helpers')
+const {urlsForUser, generaterRandomString, getUserByEmail, passCheck} = require('./helpers')
 
 //DATABASE OF SHORT:LONG URLS
 const urlDatabase = {};
@@ -132,7 +132,7 @@ app.get("/register", (req, res) => {
 
 //POST/RESIGER ENDPOINT - REDIRECTS TO URLS
 app.post("/register", (req, res) => {
-  const user = findUserByEmail(req.body.email, users)
+  const user = getUserByEmail(req.body.email, users)
   const password = req.body.password;
   if (!req.body.email || !req.body.password) {
     return res.send(400, "Email and/or password cannot be blank")
@@ -163,7 +163,7 @@ app.get('/login', (req, res) => {
 //-------------------------------------------------------
 //LOGIN FUNCTION/REDIRECTS TO URLS(LOGGEDIN)
 app.post('/login', (req, res) => {
-  const user = findUserByEmail(req.body.email, users)
+  const user = getUserByEmail(req.body.email, users)
   if(!user) {
     res.status(403).send('Account not on file')
   } else if (user && !passCheck(req.body.password, user)) {

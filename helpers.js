@@ -12,7 +12,7 @@ const generaterRandomString = function () {
 };
 
 // CHECKS EMAIL
-const findUserByEmail = function(email, usersDB) {
+const getUserByEmail = function(email, usersDB) {
   for (const user in usersDB) {
     if (usersDB[user].email === email) {
       return usersDB[user]
@@ -38,4 +38,4 @@ const urlsForUser = function(id, urlDatabase) {
   return urls;
 };
 
-module.exports = {urlsForUser, generaterRandomString, findUserByEmail, passCheck}
+module.exports = {urlsForUser, generaterRandomString, getUserByEmail, passCheck}
