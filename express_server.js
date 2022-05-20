@@ -82,7 +82,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 //DELETE BUTTON FUNCTION/REDIRECTS URLS
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     return res.status(401).send("You do not have credentials to delete")
   }
   delete urlDatabase[req.params.shortURL];
@@ -91,7 +91,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //EDIT REDIRECTS TO SHORTURL
 app.get('/urls/:shortURL/edit', (req, res) => {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     return res.status(401).send("You do not have credentials to edit")
   }
   shortURL = req.params.shortURL;
